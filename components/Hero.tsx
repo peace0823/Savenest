@@ -46,7 +46,7 @@ export default function Hero() {
         <div className="flex-1 w-full flex justify-center">
           <div className="rounded-2xl shadow-xl overflow-hidden">
             <Image
-              src="/images/People.png"
+              src="https://d3rbtxuppkc4i4.cloudfront.net/Profile.png" 
               alt="Savenest community saving"
               width={500}
               height={400}

@@ -6,34 +6,33 @@ import Image from "next/image";
 const customers = [
   {
     name: "Chinedu Okafor",
-    comment: "Savenest has completely changed the way I save. Simple, reliable, and stress-free!",
-    image: "/images/Profile.png", // Placeholder image
+    comment:
+      "Savenest has completely changed the way I save. Simple, reliable, and stress-free!",
+    image: "https://d3rbtxuppkc4i4.cloudfront.net/images/Profile.png",
   },
   {
     name: "Amina Yusuf",
-    comment: "I love how easy it is to set saving goals with Savenest. It motivates me every day.",
-    image: "/images/Image_fx - 2025-07-06T120846.467.jpg",
+    comment:
+      "I love how easy it is to set saving goals with Savenest. It motivates me every day.",
+    image:
+      "https://d3rbtxuppkc4i4.cloudfront.net/images/Image_fx-2025-07-06T120846.467.jpg",
   },
   {
     name: "Tunde Balogun",
-    comment: "With Savenest, I finally feel in control of my finances. Highly recommended!",
-    image: "/images/Image_fx - 2025-07-06T123226.679.jpg",
+    comment:
+      "With Savenest, I finally feel in control of my finances. Highly recommended!",
+    image:
+      "https://d3rbtxuppkc4i4.cloudfront.net/images/Image_fx-2025-07-06T123226.679.jpg",
   },
 ];
 
 const CustomersSaid = () => {
-  // State to track which customer is active
   const [current, setCurrent] = useState(0);
 
-  // Move to next customer
-  const nextSlide = () => {
+  const nextSlide = () =>
     setCurrent((prev) => (prev === customers.length - 1 ? 0 : prev + 1));
-  };
-
-  // Move to previous customer
-  const prevSlide = () => {
+  const prevSlide = () =>
     setCurrent((prev) => (prev === 0 ? customers.length - 1 : prev - 1));
-  };
 
   return (
     <section className="w-full bg-[#F9FAFB] py-12 px-4 flex flex-col items-center font-nunito">
@@ -44,14 +43,18 @@ const CustomersSaid = () => {
 
       {/* Slider Container */}
       <div className="relative w-full max-w-2xl">
-        {/* Rectangle card */}
+        {/* Card */}
         <div className="bg-white border border-gray-200 shadow-lg rounded-xl w-full h-[350px] flex flex-col items-center justify-center text-center px-6 transition-all duration-500">
           {/* Customer Image */}
-          <img
-            src={customers[current].image}
-            alt={customers[current].name}
-            className="w-20 h-20 rounded-full border-4 border-[#0466C8] mb-4"
-          />
+          <div className="mb-4">
+            <Image
+              src={customers[current].image}
+              alt={customers[current].name}
+              width={80}
+              height={80}
+              className="rounded-full border-4 border-[#0466C8] object-cover"
+            />
+          </div>
 
           {/* Customer Comment */}
           <p className="text-gray-700 italic text-base md:text-lg mb-4">
