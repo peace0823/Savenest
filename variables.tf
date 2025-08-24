@@ -24,12 +24,6 @@ variable "LAMBDA_JAVASCRIPT_VERSION" {
 }
 
 # --------------------------------------------------
-# AWS Caller Identity (to be used in locals, not a variable)
-# --------------------------------------------------
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-# --------------------------------------------------
 # Cognito Configuration
 # --------------------------------------------------
 variable "COGNITO_GROUP_LIST" {
