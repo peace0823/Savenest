@@ -18,8 +18,9 @@ resource "aws_s3_bucket_versioning" "versioning" {
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "savenest-public_access" {
-  bucket                  = aws_s3_bucket.savenest.id
+resource "aws_s3_bucket_public_access_block" "savenest_public_access" {
+  bucket             = aws_s3_bucket.savenest.id
+
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true

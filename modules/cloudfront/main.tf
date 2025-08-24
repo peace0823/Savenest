@@ -1,26 +1,30 @@
-resource "aws_cloudfront_origin_access_control" "cloudfront" {
-  name                              = "cloudfront-oac"
-  description                       = "CloudFront Origin Access Control for S3"
+resource "aws_cloudfront_origin_access_control" "s3_oac" {
+  name                              = "savenest-oac-${var.environment}"
+  description                       = "OAC for S3 access"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
 }
 
-resource "aws_cloudfront_distribution" "savenest_frontend" {
-  origin {
-    domain_name              = var.bucket_regional_domain_name
-    origin_access_control_id = aws_cloudfront_origin_access_control.cloudfront.id
-    origin_id                = "s3-savenest-origin"
-  }
-
+resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
-  is_ipv6_enabled     = true
   default_root_object = "index.html"
+
+  origin {
+    domain_name = var.bucket_regional_domain_name
+    origin_id   = "s3-origin-${var.environment}"
+
+    s3_origin_config {
+      origin_access_identity = null
+    }
+
+    origin_access_control_id = aws_cloudfront_origin_access_control.s3_oac.id
+  }
 
   default_cache_behavior {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "s3-savenest-origin"
+    target_origin_id       = "s3-origin-${var.environment}"
     viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
     default_ttl            = 3600
@@ -47,8 +51,8 @@ resource "aws_cloudfront_distribution" "savenest_frontend" {
   }
 
   tags = {
-    Environment = "production"
-    Name        = "Savenest Frontend App"
+    Name        = "savenest-distribution-${var.environment}"
+    Environment = var.environment
   }
 }
 
