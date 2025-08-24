@@ -13,7 +13,9 @@ locals {
   }
 }
 
-
+# --------------------------------------------------
+# IAM Roles
+# --------------------------------------------------
 module "roles" {
   source           = "./modules/roles"
   ENV              = var.ENV
@@ -22,14 +24,16 @@ module "roles" {
 
 }
 
-# POLICY
-
+# --------------------------------------------------
+# IAM Policies
+# --------------------------------------------------
 module "policy" {
-  source                                     = "./modules/policy"
-  ENV                                        = var.ENV
-  AWS_REGION                                 = var.region
-  RESOURCES_PREFIX                           = local.RESOURCES_PREFIX
-  CURRENT_ACCOUNT_ID                         = data.aws_caller_identity.current.account_id
+  source                                    = "./modules/policy"
+  ENV                                             = var.ENV
+  AWS_REGION                                = var.region
+  RESOURCES_PREFIX                          = local.RESOURCES_PREFIX
+  CURRENT_ACCOUNT_ID                              = data.aws_caller_identity.current.account_id
+
   SIGN_UP_FUNCTION_ROLE_NAME                 = module.roles.SIGN_UP_FUNCTION_ROLE_NAME
   CONFIRM_SIGN_UP_FUNCTION_ROLE_NAME         = module.roles.CONFIRM_SIGN_UP_FUNCTION_ROLE_NAME
   LOGIN_FUNCTION_ROLE_NAME                   = module.roles.LOGIN_FUNCTION_ROLE_NAME
@@ -38,8 +42,9 @@ module "policy" {
 
 }
 
-
-# Lambda
+# --------------------------------------------------
+# Lambda Functions
+# --------------------------------------------------
 module "lambda" {
   source           = "./modules/lambda"
   ENV              = var.ENV
@@ -49,21 +54,21 @@ module "lambda" {
   CLIENT_ID        = module.cognito_end_user.COGNITO_USER_CLIENT_ID_A
   POOL_ID          = module.cognito_end_user.COGNITO_USER_POOL_ID
   CLIENT_SECRET    = module.cognito_end_user.COGNITO_USER_CLIENT_SECRET_A
-
-
-  LAMBDA_JAVASCRIPT_VERSION                 = var.LAMBDA_JAVASCRIPT_VERSION
-  LAMBDA_PYTHON_VERSION                     = var.LAMBDA_PYTHON_VERSION
+  LAMBDA_JAVASCRIPT_VERSION = var.LAMBDA_JAVASCRIPT_VERSION
+  LAMBDA_PYTHON_VERSION     = var.LAMBDA_PYTHON_VERSION
   SIGN_UP_FUNCTION_ROLE_ARN                 = module.roles.SIGN_UP_FUNCTION_ROLE_ARN
   CONFIRM_SIGN_UP_FUNCTION_ROLE_ARN         = module.roles.CONFIRM_SIGN_UP_FUNCTION_ROLE_ARN
   LOGIN_FUNCTION_ROLE_ARN                   = module.roles.LOGIN_FUNCTION_ROLE_ARN
   FORGOT_PASSWORD_FUNCTION_ROLE_ARN         = module.roles.FORGOT_PASSWORD_FUNCTION_ROLE_ARN
   CONFIRM_FORGOT_PASSWORD_FUNCTION_ROLE_ARN = module.roles.CONFIRM_FORGOT_PASSWORD_FUNCTION_ROLE_ARN
-  MONGODB_URI                               = var.MONGODB_URI
+
+  MONGODB_URI = var.MONGODB_URI
   # ================================== CORE FUNCTIONS=================================     
 }
 
-
-# DYNAMODB TABLE
+# --------------------------------------------------
+# DynamoDB Tables
+# --------------------------------------------------
 module "user_table" {
   source           = "./modules/dynamodb/user_table"
   ENV              = var.ENV
@@ -92,12 +97,16 @@ module "product_table" {
 #   ] 
 # }
 
+# --------------------------------------------------
+# Open API Lambda Integrations
+# --------------------------------------------------
 module "open" {
-  source                                      = "./modules/open"
-  ENV                                         = var.ENV
-  RESOURCES_PREFIX                            = local.RESOURCES_PREFIX
-  CURRENT_ACCOUNT_ID                          = data.aws_caller_identity.current.account_id
-  API_DOMAIN_NAME                             = local.DOMAIN_NAME
+  source             = "./modules/open"
+  ENV                                                = var.ENV
+  RESOURCES_PREFIX                              = local.RESOURCES_PREFIX
+  CURRENT_ACCOUNT_ID                               = data.aws_caller_identity.current.account_id
+  API_DOMAIN_NAME                      = local.DOMAIN_NAME
+
   LAMBDA_SIGN_UP_FUNCTION_ARN                 = module.lambda.LAMBDA_SIGN_UP_FUNCTION_ARN
   LAMBDA_CONFIRM_SIGN_UP_FUNCTION_ARN         = module.lambda.LAMBDA_CONFIRM_SIGN_UP_FUNCTION_ARN
   LAMBDA_LOGIN_FUNCTION_ARN                   = module.lambda.LAMBDA_LOGIN_FUNCTION_ARN
@@ -114,7 +123,9 @@ module "open" {
   ]
 }
 
-
+# --------------------------------------------------
+# Cognito User Pool & Related Resources
+# --------------------------------------------------
 module "cognito_end_user" {
   source                                 = "./modules/cognito"
   ENV                                    = var.ENV
@@ -136,6 +147,9 @@ module "cognito_end_user" {
 
 }
 
+# --------------------------------------------------
+# S3 Bucket for Email Templates
+# --------------------------------------------------
 module "s3" {
   source           = "./modules/s3"
   environment      = var.ENV
@@ -143,6 +157,9 @@ module "s3" {
   RESOURCES_PREFIX = local.RESOURCES_PREFIX
 }
 
+# --------------------------------------------------
+# CloudFront Distribution for S3 Bucket
+# --------------------------------------------------
 module "cloudfront" {
   source                      = "./modules/cloudfront"
   environment                 = var.ENV
@@ -151,10 +168,9 @@ module "cloudfront" {
   bucket_regional_domain_name = module.s3.bucket_regional_domain_name
 }
 
-##==================================================
-#  SES creation..
-##==================================================
-
+# --------------------------------------------------
+# SES module for email setup
+# --------------------------------------------------
 # module "ses" {
 #   source     = "./modules/ses"
 #   FEMI_EMAIL = local.FEMI_EMAIL

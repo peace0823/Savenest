@@ -4,7 +4,7 @@ resource "aws_cognito_user_pool" "congito_end_user_userpool" {
   alias_attributes           = ["preferred_username"]
   auto_verified_attributes   = ["email"]
   mfa_configuration          = "OPTIONAL"
-  sms_authentication_message = "m4ace ${var.RESOURCE_PREFIX} verification code is {####}"
+  sms_authentication_message = "savenest ${var.RESOURCE_PREFIX} verification code is {####}"
 
   password_policy {
     minimum_length                   = 8
@@ -19,14 +19,23 @@ resource "aws_cognito_user_pool" "congito_end_user_userpool" {
     advanced_security_mode = "OFF"
   }
 
-
   verification_message_template {
-    default_email_option  = "CONFIRM_WITH_CODE"
-    email_message         = "Hello {custom:first_name}, Welcome, your journey starts here! Your Verification Code is: {####} If you need any assistance please contact us at support@m4ace.com. We are here to assist. Regards, m4ace Team"
-    email_message_by_link = "Hello,<br/><br/>You organisation account owner has created a ${var.RESOURCE_PREFIX} account for you on the <b>OAF</b> platform.<br/><br/>Please click the link below to verify your email address on the platform. {##Verify Email##}<br/><br/> You will receive a separate email address with your login details<br/><br/>Welcome to m4ace<br/><br/>"
-    email_subject         = "[m4ace] Registration Email Verification"
-    email_subject_by_link = "Welcome to m4ace"
-    sms_message           = "Your m4ace ${var.RESOURCE_PREFIX} reset password code is {####}"
+    default_email_option = "CONFIRM_WITH_CODE"
+    email_message        = <<EOT
+Dear {custom:first_name},
+
+Welcome to Savenest FinanceApp! Your verification code is: {####}
+
+If you did not request this, please contact support@savenestfinanceapp.com immediately.
+
+Regards,
+Savenest FinanceApp Security Team
+EOT
+
+    email_message_by_link = "Hello,<br/><br/>You organisation account owner has created a ${var.RESOURCE_PREFIX} account for you on the <b>OAF</b> platform.<br/><br/>Please click the link below to verify your email address on the platform. {##Verify Email##}<br/><br/> You will receive a separate email address with your login details<br/><br/>Welcome to savenest<br/><br/>"
+    email_subject         = "[SavenstFinanceApp] Email Verification"
+    email_subject_by_link = "Welcome to Savenest"
+    sms_message           = "Your Savenst ${var.RESOURCE_PREFIX} reset password code is {####}"
   }
 
   username_configuration {
@@ -37,11 +46,21 @@ resource "aws_cognito_user_pool" "congito_end_user_userpool" {
     allow_admin_create_user_only = false
 
     invite_message_template {
-      email_message = "Hello, <span>{username}</span></p><p class='p-paragraph'>To verify your account, please use the following One Time Password (OTP):{####}"
+      email_message = <<EOT
+Hello {username},
+
+Your temporary password is: {####}
+
+Please log in and change your password immediately.
+
+Savenest FinanceApp Team
+EOT
+
       email_subject = "Your temporary password"
-      sms_message   = "Your email is {username} and temporary password is {####}"
+      sms_message   = "Your temporary password for Savenest FinanceApp is {####}"
     }
   }
+
   account_recovery_setting {
     recovery_mechanism {
       name     = "verified_email"
@@ -122,24 +141,33 @@ resource "aws_cognito_user_pool" "congito_end_user_userpool" {
 }
 
 # creates user pool domain link 
-resource "aws_cognito_user_pool_domain" "main" {
+resource "aws_cognito_user_pool_domain" "savenest_finance_app_domain" {
   domain       = "${var.RESOURCE_PREFIX}-112233"
   user_pool_id = aws_cognito_user_pool.congito_end_user_userpool.id
 }
 
 # creates the app client
-resource "aws_cognito_user_pool_client" "cognito_client_end_user" {
-  name                                 = "${var.RESOURCE_PREFIX}-app-client-end-user"
+resource "aws_cognito_user_pool_client" "savenest_finance_app_client" {
+  name            = "${var.RESOURCE_PREFIX}-app-client-end-user"
   user_pool_id                         = aws_cognito_user_pool.congito_end_user_userpool.id
-  generate_secret                      = false
-  allowed_oauth_flows                  = ["implicit"]
-  explicit_auth_flows                  = ["ALLOW_ADMIN_USER_PASSWORD_AUTH", "ALLOW_CUSTOM_AUTH", "ALLOW_USER_PASSWORD_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]
+  generate_secret = false
+
+  allowed_oauth_flows                  = ["authorization_code"] # More secure for finance apps
   allowed_oauth_flows_user_pool_client = true
   allowed_oauth_scopes                 = ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin"]
-  callback_urls                        = ["https://${var.WEBAPP_DNS}"]
-  supported_identity_providers         = ["COGNITO"]
-  access_token_validity                = 1440
-  refresh_token_validity               = 365
+
+  explicit_auth_flows = [
+    "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+    "ALLOW_CUSTOM_AUTH",
+    "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH"
+  ]
+
+  callback_urls                = ["https://${var.WEBAPP_DNS}"]
+  supported_identity_providers = ["COGNITO"]
+
+  access_token_validity  = 60 # 1 hour tokens (reduce from 1 day for security)
+  refresh_token_validity = 30 # 30 days refresh token lifespan
 
 
   token_validity_units {
@@ -153,8 +181,9 @@ resource "aws_cognito_user_pool_client" "cognito_client_end_user" {
 }
 
 
-resource "aws_iam_policy" "sms_policy" {
-  name   = "${var.ENV}-m4ace-${var.RESOURCE_PREFIX}-sms_policy-core"
+resource "aws_iam_policy" "savenest_finance_sms_policy" {
+  name = "${var.ENV}-savenest-${var.RESOURCE_PREFIX}-sms_policy-core"
+
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -172,7 +201,8 @@ EOF
 }
 
 resource "aws_iam_role" "cognito_sms_role" {
-  name               = "${var.ENV}-${var.RESOURCE_PREFIX}-m4ace-sms-role"
+  name = "${var.ENV}-${var.RESOURCE_PREFIX}-savenest-finance-sms-role"
+
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -190,13 +220,14 @@ resource "aws_iam_role" "cognito_sms_role" {
 EOF
   tags               = var.COMMON_TAGS
 }
+
 resource "aws_iam_role_policy_attachment" "policy_role_attachment" {
   role       = aws_iam_role.cognito_sms_role.id
-  policy_arn = aws_iam_policy.sms_policy.arn
+  policy_arn = aws_iam_policy.savenest_finance_sms_policy.arn
 }
 
 resource "aws_iam_role" "group_role" {
-  name = "${var.ENV}-${var.RESOURCE_PREFIX}-m4ace-group-role"
+  name = "${var.ENV}-${var.RESOURCE_PREFIX}-savenest-group-role"
 
   assume_role_policy = <<EOF
 {
@@ -232,8 +263,8 @@ resource "aws_cognito_user_group" "cognito-user-groups" {
 }
 
 
-resource "aws_iam_role" "m4ace_lambda_iam" {
-  name = "${var.ENV}-m4ace-lambda-${var.RESOURCE_PREFIX}-role"
+resource "aws_iam_role" "savenest_lambda_role" {
+  name = "${var.ENV}-savenest-lambda-${var.RESOURCE_PREFIX}-role"
 
   assume_role_policy = <<EOF
 {
@@ -252,9 +283,8 @@ EOF
   tags               = var.COMMON_TAGS
 }
 
-
-resource "aws_iam_role_policy" "m4ace_lambda_role_policy" {
-  name = "${var.ENV}-m4ace-${var.RESOURCE_PREFIX}-lambda-policy"
+resource "aws_iam_role_policy" "save_lambda_role_policy" {
+  name = "${var.ENV}-savenest-${var.RESOURCE_PREFIX}-lambda-policy"
   role = aws_iam_role.m4ace_lambda_iam.id
 
   policy = <<EOF
@@ -296,7 +326,7 @@ resource "aws_lambda_layer_version" "request_layer" {
 resource "aws_lambda_function" "custom_message" {
   filename      = "${path.module}/code/zip/customSignUpMessage.zip"
   function_name = "${var.RESOURCE_PREFIX}_custom_message_lambda_function"
-  role          = aws_iam_role.m4ace_lambda_iam.arn
+  role          = aws_iam_role.savenest_lambda_iam.arn
   handler       = "customSignUpMessage.lambda_handler"
   runtime       = var.PYTHON_LAMBDA_VERSION
   timeout       = 60
@@ -320,7 +350,7 @@ data "archive_file" "lambda_function" {
 
 ######### DEFINE CUSTOM AUTH LAMBDA  #############################
 
-resource "aws_iam_role" "m4ace_define_custom_auth_lambda_iam" {
+resource "aws_iam_role" "savenest_define_custom_auth_lambda_iam" {
   name = "${var.RESOURCE_PREFIX}-${var.RESOURCE}-define-cusutom-auth-role"
 
   assume_role_policy = <<EOF
@@ -340,9 +370,9 @@ EOF
   tags               = var.COMMON_TAGS
 }
 
-resource "aws_iam_role_policy" "m4ace_lambda_define_custom_auth_role_policy" {
+resource "aws_iam_role_policy" "savenest_lambda_define_custom_auth_role_policy" {
   name = "${var.RESOURCE_PREFIX}-define-cusutom-auth-lambda-policy"
-  role = aws_iam_role.m4ace_define_custom_auth_lambda_iam.id
+  role = aws_iam_role.savenest_define_custom_auth_lambda_iam.id
 
   policy = <<EOF
 {
@@ -365,14 +395,12 @@ resource "aws_lambda_permission" "defineCustomAuth" {
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.congito_end_user_userpool.arn
   depends_on    = [aws_lambda_function.define_custom_auth]
-
-
 }
 
 resource "aws_lambda_function" "define_custom_auth" {
   filename      = "${path.module}/code/zip/defineAuthChallenge.zip"
   function_name = "${var.RESOURCE_PREFIX}_define_custom_auth_lambda_function"
-  role          = aws_iam_role.m4ace_lambda_iam.arn
+  role          = aws_iam_role.savenest_lambda_iam.arn
   handler       = "defineAuthChallenge.lambda_handler"
   runtime       = var.PYTHON_LAMBDA_VERSION
   memory_size   = 3008
@@ -397,7 +425,7 @@ data "archive_file" "define_auth_challenge_lambda_function" {
 
 
 ######### CREATE CUSTOM AUTH LAMBDA  #############################
-resource "aws_iam_role" "m4ace_create_custom_auth_lambda_iam" {
+resource "aws_iam_role" "savenest_finance_sms_policy_create_custom_auth_lambda_iam" {
   name = "${var.RESOURCE_PREFIX}-${var.RESOURCE}-create-cusutom-auth-role"
 
   assume_role_policy = <<EOF
@@ -417,9 +445,9 @@ EOF
   tags               = var.COMMON_TAGS
 }
 
-resource "aws_iam_role_policy" "m4ace_lambda_create_custom_auth_role_policy" {
+resource "aws_iam_role_policy" "savenest_lambda_create_custom_auth_role_policy" {
   name = "${var.RESOURCE_PREFIX}-create-cusutom-auth-lambda-policy"
-  role = aws_iam_role.m4ace_create_custom_auth_lambda_iam.id
+  role = aws_iam_role.savenest_create_custom_auth_lambda_iam.id
 
   policy = <<EOF
 {
@@ -449,7 +477,7 @@ resource "aws_lambda_permission" "createCustomAuth" {
 resource "aws_lambda_function" "create_custom_auth" {
   filename      = "${path.module}/code/zip/createAuthChallenge.zip"
   function_name = "${var.RESOURCE_PREFIX}_create_custom_auth_lambda_function"
-  role          = aws_iam_role.m4ace_lambda_iam.arn
+  role          = aws_iam_role.savenest_lambda_iam.arn
   handler       = "createAuthChallenge.lambda_handler"
   runtime       = var.PYTHON_LAMBDA_VERSION
   memory_size   = 3008
@@ -473,7 +501,7 @@ data "archive_file" "create_auth_challenge_lambda_function" {
 }
 
 ######### VERIFY CUSTOM AUTH LAMBDA  #############################
-resource "aws_iam_role" "m4ace_verify_custom_auth_lambda_iam" {
+resource "aws_iam_role" "savenest_verify_custom_auth_lambda_iam" {
   name = "${var.RESOURCE_PREFIX}-${var.RESOURCE}-verify-cusutom-auth-role"
 
   assume_role_policy = <<EOF
@@ -493,9 +521,9 @@ EOF
   tags               = var.COMMON_TAGS
 }
 
-resource "aws_iam_role_policy" "m4ace_lambda_verify_custom_auth_role_policy" {
+resource "aws_iam_role_policy" "savenest_lambda_verify_custom_auth_role_policy" {
   name = "${var.RESOURCE_PREFIX}-verify-cusutom-auth-lambda-policy"
-  role = aws_iam_role.m4ace_verify_custom_auth_lambda_iam.id
+  role = aws_iam_role.savenest_verify_custom_auth_lambda_iam.id
 
   policy = <<EOF
 {
@@ -525,7 +553,7 @@ resource "aws_lambda_permission" "verifyCustomAuth" {
 resource "aws_lambda_function" "verify_custom_auth" {
   filename      = "${path.module}/code/zip/verifyAuthChallenge.zip"
   function_name = "${var.RESOURCE_PREFIX}_verify_custom_auth_lambda_function"
-  role          = aws_iam_role.m4ace_lambda_iam.arn
+  role          = aws_iam_role.savenest_lambda_iam.arn
   handler       = "verifyAuthChallenge.lambda_handler"
   runtime       = var.PYTHON_LAMBDA_VERSION
   memory_size   = 3008
