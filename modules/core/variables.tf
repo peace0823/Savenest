@@ -27,11 +27,9 @@ variable "RESOURCES_PREFIX" {
 variable "API_DOMAIN_NAME" {
   description = "Custom domain name for the API Gateway (optional)"
   type        = string
-  default     = null
 }
 
 variable "LAMBDA_CREATE_LINK_FUNCTION_ARN" {
   description = "ARN of the Lambda function that creates links (usage dependent)"
   type        = string
-  default     = null
 }

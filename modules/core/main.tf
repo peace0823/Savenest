@@ -2,14 +2,14 @@ data "template_file" "swagger" {
   template = file("${path.module}/swagger/swagger.yml")
   vars = {
     ACCOUNT_ID = "${var.CURRENT_ACCOUNT_ID}"
-    ENV       = "${var.ENV}"
-    basePath  = "${var.BASE_PATH}"
+    ENV        = "${var.ENV}"
+    basePath   = "${var.BASE_PATH}"
   }
 }
 
 resource "aws_api_gateway_rest_api" "api_gateway" {
   body        = data.template_file.swagger.rendered
-  description = "API Gateway REST API for Noughttrapper APP"
+  description = "API Gateway REST API for Savenest APP"
   name        = "${var.RESOURCES_PREFIX}-core-rest-api"
 }
 
@@ -60,6 +60,7 @@ data "aws_iam_policy_document" "api_gateway_policy" {
     ]
   }
 }
+
 resource "aws_api_gateway_rest_api_policy" "api_policy" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway.id
   policy      = data.aws_iam_policy_document.api_gateway_policy.json

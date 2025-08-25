@@ -28,11 +28,11 @@ module "roles" {
 # IAM Policies
 # --------------------------------------------------
 module "policy" {
-  source                                    = "./modules/policy"
-  ENV                                             = var.ENV
-  AWS_REGION                                = var.region
-  RESOURCES_PREFIX                          = local.RESOURCES_PREFIX
-  CURRENT_ACCOUNT_ID                              = data.aws_caller_identity.current.account_id
+  source             = "./modules/policy"
+  ENV                = var.ENV
+  AWS_REGION         = var.region
+  RESOURCES_PREFIX   = local.RESOURCES_PREFIX
+  CURRENT_ACCOUNT_ID = data.aws_caller_identity.current.account_id
 
   SIGN_UP_FUNCTION_ROLE_NAME                 = module.roles.SIGN_UP_FUNCTION_ROLE_NAME
   CONFIRM_SIGN_UP_FUNCTION_ROLE_NAME         = module.roles.CONFIRM_SIGN_UP_FUNCTION_ROLE_NAME
@@ -54,8 +54,9 @@ module "lambda" {
   CLIENT_ID        = module.cognito_end_user.COGNITO_USER_CLIENT_ID_A
   POOL_ID          = module.cognito_end_user.COGNITO_USER_POOL_ID
   CLIENT_SECRET    = module.cognito_end_user.COGNITO_USER_CLIENT_SECRET_A
-  LAMBDA_JAVASCRIPT_VERSION = var.LAMBDA_JAVASCRIPT_VERSION
-  LAMBDA_PYTHON_VERSION     = var.LAMBDA_PYTHON_VERSION
+
+  LAMBDA_JAVASCRIPT_VERSION                 = var.LAMBDA_JAVASCRIPT_VERSION
+  LAMBDA_PYTHON_VERSION                     = var.LAMBDA_PYTHON_VERSION
   SIGN_UP_FUNCTION_ROLE_ARN                 = module.roles.SIGN_UP_FUNCTION_ROLE_ARN
   CONFIRM_SIGN_UP_FUNCTION_ROLE_ARN         = module.roles.CONFIRM_SIGN_UP_FUNCTION_ROLE_ARN
   LOGIN_FUNCTION_ROLE_ARN                   = module.roles.LOGIN_FUNCTION_ROLE_ARN
@@ -101,12 +102,11 @@ module "product_table" {
 # Open API Lambda Integrations
 # --------------------------------------------------
 module "open" {
-  source             = "./modules/open"
-  ENV                                                = var.ENV
-  RESOURCES_PREFIX                              = local.RESOURCES_PREFIX
-  CURRENT_ACCOUNT_ID                               = data.aws_caller_identity.current.account_id
-  API_DOMAIN_NAME                      = local.DOMAIN_NAME
-
+  source                                      = "./modules/open"
+  ENV                                         = var.ENV
+  RESOURCES_PREFIX                            = local.RESOURCES_PREFIX
+  CURRENT_ACCOUNT_ID                          = data.aws_caller_identity.current.account_id
+  API_DOMAIN_NAME                             = local.DOMAIN_NAME
   LAMBDA_SIGN_UP_FUNCTION_ARN                 = module.lambda.LAMBDA_SIGN_UP_FUNCTION_ARN
   LAMBDA_CONFIRM_SIGN_UP_FUNCTION_ARN         = module.lambda.LAMBDA_CONFIRM_SIGN_UP_FUNCTION_ARN
   LAMBDA_LOGIN_FUNCTION_ARN                   = module.lambda.LAMBDA_LOGIN_FUNCTION_ARN

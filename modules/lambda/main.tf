@@ -7,8 +7,6 @@ locals {
 ################################################################################
 # Layer
 ################################################################################
-
-
 resource "aws_lambda_layer_version" "javascript_layer" {
   filename                 = "${path.module}/layers/javascript_layer.zip"
   layer_name               = "${var.RESOURCES_PREFIX}-javascript-layer"
@@ -16,6 +14,7 @@ resource "aws_lambda_layer_version" "javascript_layer" {
   compatible_architectures = ["x86_64", "arm64"]
   description              = "javascript layer for node lambdas"
 }
+
 resource "aws_lambda_layer_version" "mongoose_layer" {
   filename                 = "${path.module}/layers/mongoose-layer.zip"
   layer_name               = "${var.RESOURCES_PREFIX}-mongoose-layer"
@@ -85,7 +84,7 @@ resource "aws_lambda_function" "sign_up_function" {
       POOL_ID       = var.POOL_ID
       CLIENT_ID     = var.CLIENT_ID
       CLIENT_SECRET = var.CLIENT_SECRET
-      # MONGODB_URI = var.MONGODB_URI
+      MONGODB_URI   = var.MONGODB_URI
     }
   }
   layers = local.layers
@@ -111,7 +110,7 @@ resource "aws_lambda_function" "confirm_signup_function" {
       POOL_ID       = var.POOL_ID
       CLIENT_ID     = var.CLIENT_ID
       CLIENT_SECRET = var.CLIENT_SECRET
-      # MONGODB_URI = var.MONGODB_URI
+      MONGODB_URI   = var.MONGODB_URI
     }
   }
   layers = local.layers
@@ -137,7 +136,7 @@ resource "aws_lambda_function" "login_function" {
       POOL_ID       = var.POOL_ID
       CLIENT_ID     = var.CLIENT_ID
       CLIENT_SECRET = var.CLIENT_SECRET
-      # MONGODB_URI = var.MONGODB_URI
+      MONGODB_URI   = var.MONGODB_URI
     }
   }
   layers = local.layers
@@ -164,7 +163,7 @@ resource "aws_lambda_function" "forgot_password_function" {
       POOL_ID       = var.POOL_ID
       CLIENT_ID     = var.CLIENT_ID
       CLIENT_SECRET = var.CLIENT_SECRET
-      # MONGODB_URI = var.MONGODB_URI
+      MONGODB_URI   = var.MONGODB_URI
 
     }
   }
@@ -192,7 +191,7 @@ resource "aws_lambda_function" "confirm_forgot_password_function" {
       POOL_ID       = var.POOL_ID
       CLIENT_ID     = var.CLIENT_ID
       CLIENT_SECRET = var.CLIENT_SECRET
-      # MONGODB_URI = var.MONGODB_URI
+      MONGODB_URI   = var.MONGODB_URI
     }
   }
   layers = local.layers
