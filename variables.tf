@@ -58,6 +58,10 @@ variable "MONGODB_URI" {
   default = "mongodb+srv://cloud_team_user:somethingrandom123@cluster0.889oilx.mongodb.net/SavenestDB?retryWrites=true&w=majority&appName=Cluster0"
 }
 
+data "aws_caller_identity" "name" {
+
+}
+
 # variable "TF_STATE_BUCKET" {
 #   type    = string
 #   default = "m4ace-tf-state-bucket"

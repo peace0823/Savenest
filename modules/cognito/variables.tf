@@ -65,13 +65,11 @@ variable "RESOURCE" {
 variable "COGNITO_DOMAIN_NAME" {
   description = "Custom domain name for Cognito User Pool"
   type        = string
-  default     = null
 }
 
 variable "RESEND_API_KEY" {
   description = "API key for email resend service (optional)"
   type        = string
-  default     = null
   sensitive   = true
 }
 

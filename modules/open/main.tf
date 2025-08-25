@@ -15,12 +15,10 @@ data "template_file" "swagger" {
 
 resource "aws_api_gateway_rest_api" "api_gateway" {
   body                         = data.template_file.swagger.rendered
-  description                  = "API Gateway REST API for Noughttrapper APP"
+  description                  = "API Gateway REST API for Savenest APP"
   name                         = "${var.RESOURCES_PREFIX}-open-rest-api"
   disable_execute_api_endpoint = true
 }
-
-
 
 # resource "aws_api_gateway_base_path_mapping" "api_domain_map" {
 #   api_id      = aws_api_gateway_rest_api.api_gateway.id
