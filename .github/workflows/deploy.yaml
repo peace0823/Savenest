@@ -47,5 +47,8 @@ jobs:
             - name: Terraform Plan
               run: terraform plan -no-color  -out=tfplan
 
+            - name: Terraform Plan Destroy
+              run: terraform plan -destroy -out=tfplan-destroy
+
             - name: Terraform Destroy
-              run: terraform destroy
+              run: terraform apply -auto-approve tfplan-destroy
